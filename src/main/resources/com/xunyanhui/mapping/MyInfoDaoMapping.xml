@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.MyInfoDao">
+	
+	<!-- 每当用户维护自己的头像后将新上传的文件扩展名保存到艺人的pic字段中 -->
+	<update id="updatePic" parameterType="java.util.Map">
+		update artist set pic=#{pic}
+		where id=#{artistid};
+		update user set pic=#{pic}
+		where id=#{artistid};
+	</update>
+	<!-- 为用户创建艺人信息,默认注册用户是不自动创建艺人信息的 -->
+	<insert id="newArtist" parameterType="java.util.Map">
+	insert into artist (id,stagename)values(#{uid},#{uname})
+	</insert>
+	<!-- 读取艺人详情供编辑和完善 -->
+	<select id="getArtistById" parameterType="java.util.Map" resultMap="artistResult">
+		select *
+		from artist
+		where id=#{artistid}
+	</select>
+	<resultMap type="ArtistSelfInfo" id="artistResult">
+		<id property="id" column="id" />
+		<result property="stageName" column="stagename" />
+		<result property="performanceTypeId" column="performancetypeid" />
+		<result property="specialty" column="specialty" />
+		<result property="singularNum" column="singularnum" />
+		<result property="completeNum" column="completenum" />
+		<result property="fanNum" column="fannum" />
+		<result property="rateOfpraise" column="rateofpraise" />
+		<result property="birthday" column="birthday" />
+		<result property="minSalary" column="minsalary" />
+		<result property="address" column="address" />
+		<result property="selfIntroduction" column="selfintroduction" />
+		<result property="constellation" column="constellation" />
+		<result property="bloodType" column="bloodtype" />
+		<result property="stature" column="stature" />
+		<result property="weight" column="weight" />
+		<result property="bwh" column="bwh" />
+		<result property="graduateSchool" column="graduateschool" />
+		<result property="educationalBackground" column="educationalbackground" />
+		<result property="artisticCareer" column="artisticcareer" />
+		<result property="isAcceptInvitation" column="isacceptinvitation" />
+		<result property="performanceList" column="performancelist" />
+		<result property="biographyList" column="biographylist" />
+		<result property="biographyHighest" column="biographyhighest" />
+		<result property="isAuth" column="isauth" />
+		<result property="honestyLevel" column="honestylevel" />
+		<result property="pic" column="pic"/>
+		<result property="sex" column="sex"/>
+	</resultMap>
+	<select id="getSimpleUserInfo" resultMap="simpleUserInfoResult">
+		SELECT `user`.id,`user`.nickname,`user`.username,artist.pic,artist.isrecommand
+		from user
+		LEFT JOIN artist on`user`.id=artist.id where`user`.id = #{uid}
+	</select>
+	<resultMap type="UserInfoSimple" id="simpleUserInfoResult">
+		<id property="imgId" column="id" />
+		<result property="pic" column="pic"/>
+		<result property="userName" column="username"/>
+		<result property="nickName" column="nickname"/>
+		<result property="isrecommand" column="isrecommand"/>
+
+	</resultMap>
+	<!-- 修改艺人艺名 -->
+	<update id="updateStageName" parameterType="java.util.Map">
+		update artist set stagename=#{stageName},isrecommand=0
+		where id=#{artistid};
+		update user set nickname=#{stageName}
+		where id=#{artistid};
+		
+	</update>
+	<!-- 修改艺人演艺经历 -->
+	<update id="updatePerfor" parameterType="java.util.Map">
+		update artist set performancelist=#{performancelist},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人获奖经历-->
+	<update id="updateBiographyList" parameterType="java.util.Map">
+		update artist set biographylist=#{biographylist},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人最高奖项-->
+	<update id="updateBiographyHighest" parameterType="java.util.Map">
+		update artist set biographyhighest=#{biographyhighest},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人自我介绍-->
+	<update id="updateSelfIntro" parameterType="java.util.Map">
+		update artist set selfintroduction=#{selfintroduction},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人擅长-->
+	<update id="updateSpecialty" parameterType="java.util.Map">
+		update artist set specialty=#{specialty},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人类型，艺人类型以-分隔的字符串-->
+	<update id="updateType" parameterType="java.util.Map">
+		update artist set performancetypeid=#{type},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改艺人的详细信息 -->
+	<update id="updateMore" parameterType="ArtistSelfMoreInfo">
+	update artist set city=#{city},isrecommand=0,birthday=#{birthday},address=#{address},
+	constellation=#{constellation},bloodtype=#{bloodType},stature=#{stature},
+	weight=#{weight},bwh=#{bwh},graduateschool=#{graduateSchool},
+	educationalbackground=#{educationalBackground},artisticcareer=#{artisticCareer},sex=#{sex}
+	where id=#{id};
+	update user set gender=#{sex} where id =#{id} 
+	</update>
+	<!-- 修改艺人出场费标准-->
+	<update id="updateMinSalary" parameterType="java.util.Map">
+		update artist set minsalary=#{minsalary},isrecommand=0
+		where id=#{artistid}
+	</update>
+	<!-- 修改用户的个推id-->
+	<update id="updateCidAndDeviceToken" parameterType="java.util.Map">
+		update user set cid=#{cid},devicetoken=#{devicetoken}
+		where id=#{id}
+	</update>
+	<!-- 读取用户的实名认证数据-->
+	<select id="getAuthOfUser" parameterType="java.util.Map" resultMap="authState" >
+		select auditresult,authname,idnum,type from auth_file where  uid=#{uid} group by uid
+	</select>
+	<resultMap type="AuthState" id="authState">
+		<result property="type" column="type" />
+		<result property="authName" column="authName" />
+		<result property="idNum" column="idNum" />
+		<result property="auditresult" column="auditresult" />
+	</resultMap>
+	<!-- 读取用户的实名认证状态-->
+	<select id="getAuthStateOfUser" parameterType="java.util.Map" resultType="int" >
+		select authstate from user where id=#{uid} 
+	</select>
+	
+	<!-- 获取指定艺人发布的某一演艺详情 -->
+	<select id="getPerformanceDetailsOfUser"  resultMap="performanceResult">
+		select <!-- ap.id,er.erid,er.performanceid -->
+		* from
+		art_performance ap where
+		ap.id = #{performanceid} and ap.uid=#{uid}
+	</select>
+	<resultMap type="MyPerformanceDetail" id="performanceResult">
+		<id property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="auditState" column="auditstate" />
+		<result property="address" column="address" />
+		<result property="type" column="type" />
+		<result property="performBeginTime" column="perform_begin_time" />
+		<result property="performEndTime" column="perform_end_time" />
+		<result property="require" column="require_" />
+		<result property="salary" column="salary" />
+		<result property="gender" column="gender" />
+		<result property="salaryDescription" column="salarydescription" />
+		<result property="contacts" column="contacts" />
+		<result property="contactway" column="contactway" />
+		<result property="signupNum" column="signup_num" />
+		<result property="numberOfApplicants" column="numofapplicants" />
+		<result property="endTime" column="endtime" />
+		<result property="beginTime" column="begin_time" />
+		<result property="signupState" column="signup_state" />
+		<result property="stature" column="stature" />
+		<result property="language" column="language" />
+		
+		<result property="city" column="city" />
+		<!--  
+		<collection property="entryRecords" javaType="ArrayList"
+			column="erid" ofType="EntryRecord" resultMap="entryRecordResult"></collection>-->
+	</resultMap>
+	<!-- 用户关注的艺人列表，在艺人列表的基础上添加了关注时间-->
+	<select id="getArtistListOfAtten" parameterType="java.util.Map" resultMap="artistAttenListV" >
+		SELECT artist.id,artist.stagename,artist.performancetypeid,
+			artist.completenum,artist.fannum,
+			artist.rateofpraise,artist.city,
+			artist.pic,artist.minsalary,artist.isauth,
+			artist.honestylevel,user_attention.uatime
+		from user_attention,artist
+		WHERE artist.id= user_attention.uaoid and user_attention.uid=#{uid} and user_attention.uastate=1
+	</select>
+	<resultMap type="ArtistAttenListV" id="artistAttenListV">
+		<id property="id" column="id" />
+		<result property="stageName" column="stagename" />
+		<result property="performanceType" column="performancetypeid" />
+		<result property="completeNum" column="completenum" />
+		<result property="fanNum" column="fannum" />
+		<result property="rateOfpraise" column="rateofpraise" />
+		<result property="pic" column="pic" />
+		<result property="minSalary" column="minsalary" />
+		<result property="isAuth" column="isauth" />
+		<result property="honestyLevel" column="honestylevel" />
+		<result property="attentionTime" column="uatime" />
+	</resultMap>
+	<!-- 修改用户的实名认证状态 
+	isauth: 是否实名认证，1表示认证，0表示未认证
+	authstate: 实名认证状态0表示未认证，1表示已经认证，2表示待认证,3表示认证未通过
+	auditresult:审核结果:通过，拒绝，待审核
+	-->
+	<update id="updateAuthState" parameterType="java.util.Map">
+	update auth_file set auditresult=#{auditresult},auditid=#{auditid}
+	where uid = #{uid};
+	update user set authstate=#{authstate},authtime=now()
+	where id = #{uid};
+	update artist set isauth=#{isauth}
+	where id = #{uid};
+	</update>
+	
+	<!--  -->
+	
+	
+</mapper>

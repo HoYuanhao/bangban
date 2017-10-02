@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.SystemPrivateMessageDao">
+
+	<!-- 插入一条咨询消息 -->
+	<insert id="insertSingleMessage" parameterType="java.util.Map">
+		insert into
+		system_private_message(id,releaseid,acceptid,releasetime,details,isread)
+		values(#{id},#{releaseid},#{acceptid},now(),#{details},1)
+	</insert>
+	<!-- 读取分页方式指定用户的收到消息的 -->
+	<select id="getSingleMessageList" resultMap="messageResultMap" parameterType="java.util.Map" >
+		SELECT * from (
+			select acceptid,releaseid,releasetime,details,isread,user.nickname as nickname,user.cid,user.pic 
+			from system_private_message,user
+			where (acceptid=#{uid} and releaseid=user.id) or (releaseid=#{uid} and acceptid=user.id)
+			order by releasetime desc ) as b
+		group by nickname
+		LIMIT #{size} OFFSET #{page}
+	</select>
+	<select id="getSingleMessageCount" resultType="java.lang.Integer" parameterType="java.util.Map" >
+		select count(*) 
+		from system_private_message 
+		where acceptid=#{uid}
+	</select>
+	<!-- 读取分页方式指定用户的收到消息(指定用户发送) -->
+	<select id="getSingleMessageListBySender" resultMap="messageResultMap" parameterType="java.util.Map" >
+		select acceptid,releaseid,DATE_FORMAT(releasetime,'%Y-%m-%d %H:%i:%s') as releasetime,details,isread 
+		from system_private_message 
+		where (acceptid=#{uid} and releaseid=#{sid}) or (acceptid=#{sid} and releaseid=#{uid})
+		order by releasetime asc
+		LIMIT #{size} OFFSET #{page}
+	</select>
+		<resultMap  type="SystemPrivateMessageList" id="messageResultMap">
+		<!--id映射-->
+		<id property="id" column="id"/>
+		<!--普通属性映射-->
+		<result property="releaseId" column="releaseid"/>
+		<result property="acceptId" column="acceptid"/>
+		<result property="releaseTime" column="releasetime"/>
+		<result property="details" column="details"/>
+		<result property="isRead" column="isread"/>
+		<result property="sName" column="nickname"/>
+		<result property="cId" column="cid"/>
+		<result property="pic" column="pic"/>
+	</resultMap>
+	<!-- 计算两者之间发送信息的总通信数 -->
+	<select id="conutSingleMessageListBySender" resultType="Integer" parameterType="java.util.Map" >
+		select count(*)
+		from system_private_message 
+		where (acceptid=#{uid} and releaseid=#{sid}) or (acceptid=#{sid} and releaseid=#{uid})
+	</select>
+	
+	
+
+</mapper>

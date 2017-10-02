@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.ActiveMessageDao">
+
+	<!-- 插入一条活动消息 -->
+	<insert id="insertActiveMessage" parameterType="java.util.Map">
+		insert into
+
+		active_message(id,releaseid,img,releasetime,details,topic,scope,path)
+		values(#{id},#{releaseid},#{img},now(),#{details},#{topic},#{scope},#{path})
+	</insert>
+	<!-- 读取分页方式系统活动消息的列表 -->
+	<select id="getActiveMessageList" resultMap="activeMessageResultMap"
+		parameterType="java.util.Map">
+		select
+		id,releaseid,CONCAT(path,img) as img,DATE_FORMAT(releasetime,'%Y-%m-%d %H:%i:%s') as
+		releasetime,details,topic,scope
+		from active_message
+		order by releasetime desc
+		LIMIT #{size} OFFSET #{page}
+	</select>
+	<!-- 读取系统中存储的活动数量 -->
+	<select id="getActiveMessageCount" resultType="int">
+		select
+		count(*)
+		from active_message
+	</select>
+
+	<resultMap type="ActiveMessageList" id="activeMessageResultMap">
+		<!--id映射 -->
+		<id property="id" column="id" />
+		<!--普通属性映射 -->
+		<result property="releaseId" column="releaseid" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="details" column="details" />
+		<result property="topic" column="topic" />
+		<result property="scope" column="scope" />
+		<result property="img" column="img" />
+	</resultMap>
+
+
+</mapper>

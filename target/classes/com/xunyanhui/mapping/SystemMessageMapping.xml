@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.SystemMessageDao">
+
+	<!-- 读取分页方式指定用户的收到消息的 -->
+	<select id="getSystemMessageList" resultMap="messageResultMap" parameterType="java.util.Map" >
+		select id,DATE_FORMAT(releasetime,'%Y-%m-%d %H:%i:%s') as releasetime,details,topic,type 
+		from system_message
+		where (acceptid=#{uid} or acceptid='1') and releasetime&gt;=#{date}
+		order by releasetime desc
+		LIMIT #{size} OFFSET #{page}
+	</select>
+	
+		<resultMap  type="SystemMessageList" id="messageResultMap">
+		<!--id映射-->
+		<id property="id" column="id"/>
+		<!--普通属性映射-->
+		<result property="releaseTime" column="releasetime"/>
+		<result property="details" column="details"/>
+		<result property="topic" column="topic"/>
+		<result property="type" column="type"/>
+	</resultMap>
+	<!-- 插入系统消息 -->
+	<insert id="newSystemMessage"  parameterType="systemMessage">
+	insert into system_message(id,releasetime,details,releaseid,acceptid,topic)
+	values(#{id},now(),#{details},#{releaseId},#{acceptId},#{topic})
+	</insert>
+	<!-- 修改系统消息的发送状态 -->
+	<update id="updateSysMsgState"  parameterType="Map">
+	update system_message set issend=1
+	where id=#{id}
+	</update>
+
+
+</mapper>

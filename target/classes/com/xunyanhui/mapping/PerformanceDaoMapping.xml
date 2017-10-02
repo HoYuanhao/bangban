@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.PerformanceDao">
+	<select id="getPerformanceList" resultMap="performanceResult">
+		select * from
+		art_performance p
+		where p.signup_state = 1 and p.endtime
+		&gt; now() and auditstate = 2 and city=#{ccity}
+
+		<if test="type !=null">
+			and p.type = #{type}
+		</if>
+		<choose>
+			<when test="order == 1">
+				order by
+				2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+				cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+				6378.137*1000,p.salary desc
+			</when>
+			<when test="order == 2">
+				order by
+				2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+				cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+				6378.137*1000,p.salary asc
+			</when>
+			<when test="order == 3">
+				order by
+				2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+				cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+				6378.137*1000,p.signup_num desc
+			</when>
+			<when test="order == 4">
+				order by
+				2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+				cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+				6378.137*1000 ,p.signup_num asc
+			</when>
+			<when test="order == 0">
+				order by
+				2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+				cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+				6378.137*1000,p.releasetime desc
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		limit #{beginIndex},#{pageCount}
+	</select>
+
+	<select id="getEntryRecordByUidAndPerforId" resultType="EntryRecord">
+		select *
+		from entry_record where artistid = #{uid} and performanceid =
+		#{performanceId}
+	</select>
+	<insert id="addPerformance" parameterType="Performance">
+		insert into
+		art_performance(id,city,title,uid,usertype,releasetime,auditstate,address,type,perform_begin_time,perform_end_time,require_,salary,gender,salarydescription,contacts,contactway,signup_num,numofapplicants,endtime,begin_time,signup_state,stature,language,pic,homepic,lat,lng)
+		values(#{id},#{city},#{title},#{uid},#{userType},#{releaseTime},#{auditState},#{address},#{type},#{performBeginTime},
+		#{performEndTime},#{require},#{salary},#{gender},#{salaryDescription},#{contacts},#{contactway},#{signupNum},#{numberOfApplicants},
+		#{endTime},#{beginTime},#{signupState},#{stature},#{language},#{pic},#{pic},#{lat},#{lng})
+	</insert>
+	<select id="hasPerforByIdAndUid" resultType="java.lang.Integer">
+		select count(*) from
+		art_performance where id = #{id} and uid = #{uid}
+	</select>
+	<select id="getPerformanceDetails" resultMap="performanceResult">
+		select <!-- ap.id,er.erid,er.performanceid -->
+		* from
+		art_performance ap where
+		ap.id = #{id}
+	</select>
+	<select id="isSelf" resultType="Integer">
+		select count(*) from
+		art_performance where uid =
+		#{employerId} and id = #{performanceId}
+	</select>
+	<select id="searchByKey" resultMap="performanceResult">
+		select * from
+		art_performance
+		p
+		where p.signup_state = 1 and p.endtime
+		&gt;
+		now() and auditstate = 2
+		and p.title like #{key} and city=#{ccity}
+		order by
+		2*asin(sqrt(power(sin((lat-40)*3.14159265359/180/2),2)+
+		cos(lat*3.14159265359/180)*cos(40*3.14159265359/180)*power(sin((lng-120)*3.14159265359/180/2),2)))*
+		6378.137*1000,p.salary desc
+		limit #{beginIndex},#{pageCount}
+
+	</select>
+
+	<select id="getSignUpById" parameterType="String" resultType="Integer">
+		select signup_num from
+		art_performance
+		where id=#{id}
+	</select>
+
+	<update id="updateSignUpNum" parameterType="String">
+		update art_performance set signup_num=signup_num+1 where id=#{id}
+	</update>
+
+
+
+	<resultMap type="Performance" id="performanceResult">
+		<id property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="uid" column="uid" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="auditState" column="auditstate" />
+		<result property="address" column="address" />
+		<result property="type" column="type" />
+		<result property="performBeginTime" column="perform_begin_time" />
+		<result property="performEndTime" column="perform_end_time" />
+		<result property="require" column="require_" />
+		<result property="salary" column="salary" />
+		<result property="gender" column="gender" />
+		<result property="salaryDescription" column="salarydescription" />
+		<result property="contacts" column="contacts" />
+		<result property="contactway" column="contactway" />
+		<result property="signupNum" column="signup_num" />
+		<result property="numberOfApplicants" column="numofapplicants" />
+		<result property="endTime" column="endtime" />
+		<result property="beginTime" column="begin_time" />
+		<result property="signupState" column="signup_state" />
+		<result property="stature" column="stature" />
+		<result property="language" column="language" />
+		<result property="homePic" column="homepic" />
+		<result property="pic" column="pic" />
+		<result property="city" column="city" />
+		<!-- <collection property="entryRecords" javaType="ArrayList" column="erid" 
+			ofType="EntryRecord" resultMap="entryRecordResult"></collection> -->
+	</resultMap>
+
+	<resultMap type="EntryRecord" id="entryRecordResult">
+		<id property="erid" column="erid" />
+		<result property="artistId" column="artistid" />
+		<result property="performanceId" column="performanceid" />
+		<result property="sigupTime" column="siguptime" />
+		<result property="price" column="price" />
+		<result property="description" column="description" />
+		<result property="state" column="state" />
+		<result property="setStageName" column="stagename" />
+		<result property="pic" column="pic" />
+	</resultMap>
+
+</mapper>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.AccountDao">
+
+	<!-- 新建用户账户 -->
+	<insert id="newAccount" parameterType="Account">
+	insert account(accountid,uid,password,money,mobile,username)
+	values(#{accountId},#{uid},#{password},0,#{mobile},#{userName})
+	</insert>
+	
+	<!-- 读取指定账户的余额账户已uid为id -->
+	<select id="getBalanceOfUser" parameterType="Map" resultMap="balanceResult">
+	select uid,money,password
+	from account
+	where uid = #{uid}
+	</select>
+	<resultMap type="AccountBalance" id="balanceResult">
+		<!--id映射 -->
+		<id property="id" column="id" />
+		<!--普通属性映射 -->
+		<result property="money" column="money" />
+		<result property="passWord" column="password" />
+	</resultMap>
+	<!-- 检查用户是否存在帐户-->
+	<select id="checkAccount" parameterType="Map" resultType="String">
+	select accountid
+	from account
+	where uid = #{uid}
+	</select>
+	<!-- 新建交易-->
+	<insert id="newTR" parameterType="TransactionRecord">
+	insert transaction_record(trid,type,paymentid,receiveId,paycardid,receivecardid,money,description,channel,state,orderTime,performanceid,timestamp)
+	values(#{trid},#{type},#{paymentId},#{receiveId},#{paycardId},#{receivecardId},#{money},#{description},#{channel},#{state},now(),#{performanceId},#{timestamp})
+	</insert>
+	<!-- 修改交易状态，根据交易记录编号 -->
+	<update id="updateTRState" parameterType="Map">
+	update transaction_record set state=#{state} where trid=#{trid}
+	</update>
+	<!-- 修改交易状态，根据支付人id，收款人id，关联的演艺活动id -->
+	<update id="updateTRStateByPerformance" parameterType="Map">
+	update transaction_record set state=#{state} where paymentid=#{paymentid} and receiveid=#{receiveid} and performanceid=#{performanceid}
+	</update>
+		<!-- 绑定银行卡到用户账户上 -->
+	<insert id="bandCardOnAccount" parameterType="AccountCard">
+		insert accountCard(accountcardid,uid,cardno,bank,bandtime,ismaster,cardname,accound_id)
+		values(#{accountCardId},#{uid},#{cardNo},#{bank},now(),0,#{cardName},#{accound_id})
+	</insert>
+	<!-- 设定主卡 -->
+	<update id="setMasterCardOfAccount" parameterType="Map">
+		update accountCard set isMaster=0
+		where uid = #{uid};
+		update accountCard set isMaster=1
+		where uid = #{uid} and accountcardid=#{cardno};
+	</update>
+	<!-- 解除银行卡在用户账户上的绑定 -->
+	<delete id="unbandCardOnAccount" parameterType="Map">
+		delete from accountCard where uid=#{uid} and accountcardid=#{cardno}
+	</delete>
+
+	<!-- 读取用户绑定的银行卡列表 select accountcardid,cardno,bank,date_format(bandtime,'%Y-%m-%d') 
+		as bandtime,ismaster,cardname from accountCard where uid=#{uid} -->
+	<select id="bandCardList" parameterType="Map" resultMap="cardResult">
+		select accountcardid,cardno,bank,ismaster,cardname,cardtype from accountcard
+		where uid=#{uid}
+	</select>
+	<resultMap type="AccountCardL" id="cardResult">
+		<!--id映射 -->
+		<id property="accountCardId" column="accountcardid" />
+		<!--普通属性映射 -->
+		<result property="cardNo" column="cardno" />
+		<result property="bank" column="bank" />
+		<result property="bandTime" column="bandtime" />
+		<result property="isMaster" column="ismaster" />
+		<result property="cardType" column="cardtype" />
+	</resultMap>
+	<!-- 检查银行卡是否绑定过 -->
+	<select id="checkCardBand" parameterType="Map" resultMap="cardResult">
+		select * from accountcard where cardno=#{cardno}
+	</select>
+	<resultMap type="AccountCard" id="accountCardResult">
+		<!--id映射 -->
+		<id property="accountCardId" column="accountcardid" />
+		<!--普通属性映射 -->
+		<result property="cardNo" column="cardno" />
+		<result property="bank" column="bank" />
+		<result property="bandTime" column="bandtime" />
+		<result property="isMaster" column="ismaster" />
+		<result property="cardType" column="cardtype" />
+	</resultMap>
+	<!-- 获取客户的交易帐单 -->
+	<select id="getBills" parameterType="Map" resultMap="billResult">
+		select * from bills where paymentid=#{uid} or receiveid= #{uid}
+		<if test="startTime !=null ">
+			and ordertime &lt;#{startTime} and ordertime&gt;#{endTime}
+		</if>
+		LIMIT #{start},#{length}
+	</select>
+	<resultMap type="Bill" id="billResult">
+		<!--id映射 -->
+		<id property="trid" column="trid" />
+		<!--普通属性映射 -->
+		<result property="money" column="money" />
+		<result property="description" column="description" />
+		<result property="type" column="type" />
+		<result property="state" column="state" />
+		<result property="ordertime" column="ordertime" />
+		<result property="paymentid" column="paymentid" />
+		<result property="pu" column="pu" />
+		<result property="ppic" column="ppic" />
+		<result property="receiveid" column="receiveid" />
+		<result property="ru" column="ru" />
+		<result property="rpic" column="rpic" />
+		<result property="yearmonth" column="yearmonth" />
+		<result property="performanceid" column="performanceid" />
+		<result property="title" column="title" />
+	</resultMap>
+	<!-- 设置用户的支付密码 -->
+	<update id="updatePassWordOfAccount" parameterType="Map">
+		update account set password=#{password} where uid=#{uid}
+		<if test="oldpd!=null">
+			and password=#{oldpd}
+		</if>
+	</update>
+	<!-- 获取用户绑定的支移动电话 -->
+	<select id="getMobile" parameterType="Map" resultType="String">
+	select mobile from account where uid =#{uid}
+	</select>
+	<!-- 检查用户帐户的密码是否正确 -->
+	<select id="checkAccountPassword" parameterType="Map" resultType="String">
+		select accountid
+		from account
+		where uid = #{uid} and password=#{password}
+	</select>
+	<!-- 修改账户余额余额分两种，加value值为正或减value值为负 -->
+	<update id="updateBalance"  parameterType="Map">
+		UPDATE account set money = money+#{value} where uid = #{uid}
+	</update>
+	<!-- 检查银行卡是否绑定过 -->
+	<select id="getCardInfo" parameterType="Map" resultMap="accountCardResult">
+		select * from accountcard where accountcardid=#{accountcardid}
+	</select>
+	
+	
+</mapper>

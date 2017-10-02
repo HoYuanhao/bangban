@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.EntryRecordDao">
+
+
+	<insert id="performanceSignup">
+		insert into
+		entry_record(erid,artistid,performanceid,price,description,siguptime)
+		values(#{erid},#{artistId},#{performanceId},#{price},#{desc},now())
+	</insert>
+	
+	<update id="addSignUpNumber" parameterType="String">
+	update art_performance set signup_num=#{signup_num} where id=#{id}
+	</update>
+	
+	<select id="isSignup" resultType="Integer">
+		select count(*) from
+		entry_record where artistid =
+		#{artistId} and
+		performanceid =
+		#{peformanceId}
+	</select>
+	<select id="signupList"  resultMap="entryRecordResult">
+		select * from entry_record
+		where performanceid = #{performanceId}
+	</select>
+	<resultMap type="EntryRecord" id="entryRecordResult">
+		<id property="erid" column="erid" />
+		<result property="sigupTime" column="siguptime" />
+		<result property="price" column="price" />
+		<result property="description" column="description" />
+		<result property="state" column="state" />
+		<association property="artist" column="artistid"
+			resultMap="com.xunyanhui.dao.UserDao.userResult"></association>
+		<!-- <association property="employer" column="employerid" resultMap="com.xunyanhui.dao.UserDao.userResult"></association> -->
+		<association property="performance" column="performanceid"
+			resultMap="com.xunyanhui.dao.PerformanceDao.performanceResult"></association>
+	</resultMap>
+	
+	<!-- 获取指定用户指定演艺活动的报名情况-->
+	<select id="getEntryRecord" parameterType="java.util.Map" resultMap="entryDetailResult" >
+		select * from entry_record
+		where performanceid = #{performanceId} and artistid=#{artistId}
+	</select>
+	<resultMap type="EntryRecordN" id="entryDetailResult">
+		<id property="erid" column="erid" />
+		<result property="artistid" column="artistid" />
+		<result property="performanceid" column="performanceid" />
+		<result property="sigupTime" column="siguptime" />
+		<result property="price" column="price" />
+		<result property="description" column="description" />
+		<result property="state" column="state" />
+	</resultMap>
+	
+	<insert id="performanceInvite">
+		insert into
+		entry_record(erid,artistid,performanceid,siguptime,state)
+		values(#{erid},#{artistId},#{performanceId},now(),8)
+	</insert>
+
+</mapper>

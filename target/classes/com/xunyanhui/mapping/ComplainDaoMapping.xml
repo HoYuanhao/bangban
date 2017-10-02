@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.ComplainDao">
+
+	<!-- 新建申诉 -->
+	<insert id="newComplain" parameterType="Complain">
+	insert complain(uid,artistid,performanceid,complaintime,description,state)
+	values(#{uid},#{artistid},#{performanceid},now(),#{description},#{state})
+	</insert>
+	
+	<!-- 修改申诉处理结果 -->
+	<update id="updateComplainState" parameterType="java.util.Map" >
+	UPDATE complain SET state=#{state}, reuslt = concat(result,#{result},opid=#{opid}) 
+	WHERE artistid=#{artistid} and performanceid=#{performanceid}
+	</update>
+	<!-- 查看申诉处理结果 -->
+	<select id="getComplain" parameterType="java.util.Map" resultMap="complainResult">
+	select *
+	from complain
+	where artistid=#{artistid} and performanceid=#{performanceid}
+	</select>
+	
+	<resultMap type="Complain" id="complainResult">
+		<!--id映射 -->
+		<id property="cid" column="cid" />
+		<!--普通属性映射 -->
+		<result property="uid" column="uid" />
+		<result property="artistid" column="artistid" />
+		<result property="performanceid" column="performanceid" />
+		<result property="complaintime" column="complaintime" />
+		<result property="description" column="description" />
+		<result property="state" column="state" />
+		<result property="result" column="result" />
+		<result property="opid" column="opid" />
+	</resultMap>
+	
+	
+</mapper>

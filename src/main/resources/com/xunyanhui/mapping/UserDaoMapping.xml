@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.UserDao">
+
+
+<!-- 获取用户对应的cid -->
+	<select id="getCid" parameterType="java.util.Map" resultType="String">
+	select cid
+	from user
+	where id=#{id}
+	</select>
+
+	<sql id="userLeftJoin">
+		user u
+		left outer
+		join artist a on u.id = a.id
+		left outer join
+		employer e on
+		u.id = e.id
+		left outer join
+		coupon c on
+		u.id = c.uid
+	</sql>
+	<sql id="artistLeftJoin">
+		artist a
+		left outer join artist_announcement aan on a.id =aan.uid
+		left outer join  artist_opus ao on a.id = ao.uid
+		left outer join artist_evaluate ae  on a.id = ae.uid
+		left outer join artist_adept aad on a.id = aad.uid
+	</sql>
+	<!-- 完成 -->
+	<select id="getHomeArtistList" resultMap="userResult">
+		select u.id,
+		u.isv,
+		a.stagename,
+		a.pic,
+		a.completenum, a.fannum,
+		a.minsalary, a.city as address, ao.name,a.selfintroduction as specialty 
+		from
+		user u
+		left outer
+		join
+		artist a left
+		outer join artist_opus ao on
+		a.id
+		= ao.uid on u.id =
+		a.id
+		where isrecommand=1 and a.regist_time &lt; #{date}
+		limit
+		#{beginIndex},#{pageCount}
+
+	</select>
+	<insert id="addUser" parameterType="User">
+		insert into
+		user(id,username,password,nickname,registertime,isauth,authtime,preip,grade,preaddress,lastactiveid,lastinformationid,
+		isforblogin,lastapid)
+		values(#{id},#{userName},#{password},#{nickName},#{registerTime,jdbcType=TIMESTAMP},#{isAuth},#{authTime,jdbcType=TIMESTAMP},#{preIp},#{grade},#{preAddress},#{lastActiveId},
+		#{lastInfomationId},#{isForbLogin},#{lastapid})
+
+	</insert>
+
+	<select id="getUserById" resultMap="userResult">
+		select *
+		from
+		<include refid="userLeftJoin" />
+		where u.id = #{id}
+	</select>
+	<!-- 完成 -->
+	<select id="getUserByUserNameAndPasswd" resultMap="userResult">
+
+		select *
+		from
+		<include refid="userLeftJoin"></include>
+		where (u.username = #{userName} or mobile=#{userName}) and u.password = #{passwd}
+	</select>
+	<!-- 完成 -->
+	<select id="hasUserByUserName" resultType="Integer">
+
+		select count(*)
+		from
+		<include refid="userLeftJoin"></include>
+		where u.username = #{userName}
+	</select>
+	<select id="getArtiArtistList" resultMap="userResult">
+		select a.id,
+		a.stagename,a.pic,a.fannum,a.completenum,a.address,a.regist_time,a.minsalary,at.id,at.name,a.city,a.performancetypeid,a.isauth,a.honestylevel
+		from
+		user u inner join
+		artist a on u.id = a.id left outer join
+		artist_adept aad on a.id = aad.uid
+		left outer join
+		artist_type at on
+		aad.typeid = at.id
+		where a.isbanned
+		= 0 and isrecommand&gt;=1 and a.regist_time &lt; #{date}
+		<if test="gender != 0">
+			and u.gender = #{gender}
+		</if>
+		<if test="type != null">
+			AND a.performancetypeid like #{type}
+		</if>
+
+		<choose>
+			<when test="order == 1">
+				order by a.completenum desc
+			</when>
+			<when test="order == 2">
+				<!-- 最受欢迎 -->
+			</when>
+			<when test="order == 3">
+				and u.authstate = 1
+			</when>
+			<when test="order == 4">
+				order by a.fannum desc
+			</when>
+			<when test="order == 5">
+				order by a.fannum asc
+			</when>
+			<when test="order == 6">
+				order by a.minsalary desc
+			</when>
+			<when test="order == 7">
+				order by a.minsalary asc
+			</when>
+			<when test="order == 8">
+				order by a.rateofpraise asc
+			</when>
+			<when test="order == 0">
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		limit #{beginIndex},#{pageCount}
+	</select>
+	<select id="searchByKey" resultMap="userResult">
+		select a.id,
+		a.stagename,a.pic,a.fannum,a.completenum,a.address,a.regist_time,a.minsalary,at.id,at.name,a.city,a.performancetypeid,a.isauth,a.honestylevel
+		from
+		user u 
+		inner  join  artist a on u.id = a.id left outer join
+		artist_adept aad on a.id =
+		aad.uid
+		left outer join
+		artist_type at on
+		aad.typeid = at.id
+		where
+		a.isbanned
+		= 0 and isrecommand&gt;=1 and a.regist_time &lt; #{date}
+		and a.stagename like
+		#{key} limit #{beginIndex},#{pageCount}
+	</select>
+
+
+	<select id="getAtristById" resultMap="artistResult">
+		select * from
+		<include refid="artistLeftJoin"></include>
+		where a.id = #{id}
+
+	</select>
+
+
+	<select id="getArtistList" resultMap="artistResult">
+		select * from
+		<include refid="artistLeftJoin"></include>
+	</select>
+	<select id="getUserCount" resultType="Long">
+		select count(*) from
+		user
+	</select>
+
+	<update id="updatePasswd">
+		update user
+		set password = #{newPasswd} 
+		where id = #{id} and password=#{oldPasswd}
+	</update>
+
+
+
+	<insert id="registUser" parameterType="User">
+		<!-- insert into user(id,username,password,nickname,registertime,authState,authtime,isv,preip,grade,preaddress,lastactiveid,lastinformationid, 
+			isforblogin,lastapid) values(#{id},#{userName},#{password},#{nickName},#{registerTime,jdbcType=TIMESTAMP},#{authState},#{authTime,jdbcType=TIMESTAMP},#{v},#{preIp},#{grade},#{preAddress},#{lastActiveId}, 
+			#{lastInfomationId},#{isForbLogin},#{lastapid}) -->
+		insert into user(id,username,password,registertime,mobile,cid)
+		values(#{id},#{userName},#{password},#{registerTime},#{mobile},#{cid})
+
+	</insert>
+	<select id="hasMobile" resultType="int">
+		select count(*) from user where mobile = #{mobile}
+	</select>
+	<insert id="addArtist">
+		insert into
+		artist(id,stagename,performancetypeid,specialty,singularnum,completenum,fannum,rateofpraise,birthday,minsalary,address,
+		selfintroduction,constellation,bloodtype,stature,weight,bwh,graduateschool,educationalbackground,artisticcareer,
+		isacceptinvitation,isbanned)
+		values(#{id},#{stageName},#{performanceTypeId},#{specialty},#{singularNum},#{completeNum},#{fanNum},#{rateOfpraise},#{birthday},
+		#{minSalary},#{address},#{selfIntroduction},#{constellation},#{bloodType},#{stature},#{weight},#{bwh},#{graduateSchool},#{educationalBackground},#{artisticCareer},
+		#{isAcceptInvitation},#{isBanned})
+	</insert>
+
+	<insert id="addEmployer" parameterType="Employer">
+		insert into
+		employer(id,releasenum,dealnum,highnum,badnum,state)
+		values(#{id},#{releaseNum},#{dealNum},#{highNum},#{badNum},#{state})
+	</insert>
+
+
+	<insert id="addCoupon" parameterType="Coupon">
+		insert into
+		coupon(id,uid,name,sum,state,beginTime,endTime,sccId)
+		values(#{id},#{uid},#{name},#{sum},#{state},#{begintime},#{endtime},#{sccid})
+
+	</insert>
+	<insert id="addAuthFile">
+		insert into
+		auth_file(id,type,authname,idnum,filename,path,time)
+		values(#{id},#{type},#{authName},#{idNum},#{fileName},#{path},#{time})
+	</insert>
+
+	<resultMap type="User" id="userResult">
+		<id property="id" column="id" />
+		<result property="userName" column="username" />
+		<result property="password" column="password" />
+		<result property="nickName" column="nickname" />
+		<result property="registerTime" column="registertime" />
+		<result property="isAuth" column="isauth" />
+		<result property="gender" column="gender" />
+
+		<result property="registerTime" column="registertime" />
+		<result property="authState" column="authState" />
+		<result property="authTime" column="authtime" />
+		<result property="preIp" column="preip" />
+		<result property="grade" column="grade" />
+		<result property="preAddress" column="preaddress" />
+		<result property="lastActiveId" column="lastactiveid" />
+		<result property="lastInfomationId" column="lastinformationid" />
+		<result property="isForbLogin" column="isforblogin" />
+		<result property="lastapid" column="lastapid" />
+
+		<!-- 外键关联艺人表 -->
+
+		<association property="artist" column="id" javaType="Artist"
+			resultMap="artistResult" />
+		<!-- 外键关联雇主表 -->
+		<association property="employer" column="id" javaType="Employer"
+			resultMap="employerResult" />
+		<collection property="couponList" javaType="ArrayList"
+			column="id" ofType="Coupon" resultMap="couponResult" />
+
+
+	</resultMap>
+
+	<resultMap type="Coupon" id="couponResult">
+
+		<id property="id" column="id" />
+
+		<result property="uid" column="uid" />
+		<result property="name" column="name" />
+		<result property="sum" column="sum" />
+		<result property="state" column="state" />
+		<result property="beginTime" column="beginTime" />
+		<result property="endTime" column="endTime" />
+		<result property="sccId" column="sccId" />
+
+	</resultMap>
+
+
+	<resultMap type="AuthFile" id="authFileResult">
+		<id property="id" column="id" />
+		<result property="uid" column="uid" />
+		<result property="type" column="type" />
+		<result property="authName" column="authname" />
+		<result property="idNum" column="idnum" />
+		<result property="fileName" column="filename" />
+		<result property="path" column="path" />
+		<result property="time" column="time" />
+
+	</resultMap>
+
+
+	<resultMap type="Artist" id="artistResult">
+		<id property="id" column="id" />
+		<result property="stageName" column="stagename" />
+		<result property="performanceTypeId" column="performancetypeid" />
+		<result property="specialty" column="specialty" />
+		<result property="singularNum" column="singularnum" />
+		<result property="completeNum" column="completenum" />
+		<result property="fanNum" column="fannum" />
+		<result property="rateOfpraise" column="rateofpraise" />
+		<result property="birthday" column="birthday" />
+		<result property="minSalary" column="minsalary" />
+		<result property="address" column="address" />
+		<result property="selfIntroduction" column="selfintroduction" />
+		<result property="constellation" column="constellation" />
+		<result property="bloodType" column="bloodtype" />
+		<result property="stature" column="stature" />
+		<result property="weight" column="weight" />
+		<result property="bwh" column="bwh" />
+		<result property="graduateSchool" column="graduateschool" />
+		<result property="educationalBackground" column="educationalbackground" />
+		<result property="artisticCareer" column="artisticcareer" />
+		<result property="isAcceptInvitation" column="isacceptinvitation" />
+		<result property="isBanned" column="isbanned" />
+		<result property="pic" column="pic"/>
+		<result property="city" column="city"/>
+		<result property="isAuth" column="isauth"/>
+		<result property="honestyLevel" column="honestylevel"/>
+
+		<collection property="typeList" javaType="ArrayList"
+			column="id" ofType="ArtistType" resultMap="artistTypeResult" />
+		<collection property="artistAnnouncementList" javaType="ArrayList"
+			column="id" ofType="ArtistAnnouncement" resultMap="artistAnnouncementResult" />
+		<collection property="artistOpusList" javaType="ArrayList"
+			column="id" ofType="ArtistOpus" resultMap="artistOpusResult" />
+		<collection property="artistBiographyList" javaType="ArrayList"
+			column="id" ofType="ArtistBiography" resultMap="artistBiographyResult" />
+		<collection property="artistEvaluateList" javaType="ArrayList"
+			column="eid" ofType="ArtistEvaluate" resultMap="artistEvaluateResult" />
+
+
+	</resultMap>
+
+
+	<resultMap type="Employer" id="employerResult">
+		<id property="id" column="id" />
+		<result property="releaseNum" column="releasenum" />
+		<result property="dealNum" column="dealnum" />
+		<result property="highNum" column="highnum" />
+		<result property="badNum" column="badnum" />
+		<result property="state" column="state" />
+	</resultMap>
+
+	<resultMap type="ArtistType" id="artistTypeResult">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+	</resultMap>
+
+	<resultMap type="ArtistAnnouncement" id="artistAnnouncementResult">
+		<id property="id" column="" />
+
+		<result property="content" column="content" />
+		<result property="beginTime" column="begintime" />
+		<result property="endTime" column="endtime" />
+		<result property="state" column="state" />
+	</resultMap>
+
+	<resultMap type="ArtistOpus" id="artistOpusResult">
+
+		<id property="oid" column="oid" />
+
+		<result property="name" column="name" />
+		<result property="description" column="description" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="releaseId" column="releaseid" />
+		<result property="type" column="type" />
+		<result property="fileName" column="filename" />
+		<result property="filePath" column="filepath" />
+		<result property="clickNum" column="clicknum" />
+		<result property="praiseNum" column="praisenum" />
+	</resultMap>
+
+	<resultMap type="ArtistBiography" id="artistBiographyResult">
+
+		<id property="id" column="id" />
+
+		<result property="name" column="name" />
+		<result property="description" column="description" />
+		<result property="organization" column="organization" />
+		<result property="time" column="time" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="releaseid" column="releaseid" />
+		<result property="isHighestAward" column="ishighestaward" />
+		<result property="type" column="type" />
+
+	</resultMap>
+	<resultMap type="ArtistEvaluate" id="artistEvaluateResult">
+
+		<id property="eid" column="eid" />
+		<result property="uid" column="uid" />
+		<result property="evaluateId" column="evaluateid" />
+		<result property="type" column="type" />
+		<result property="value" column="value" />
+	</resultMap>
+	<!-- 检查手机号是否已经注册 -->
+	<select id="checkMobile" parameterType="Map" resultType="Integer">
+		select count(*)
+		from user 
+		where mobile=#{mobile}
+	</select>
+	<select id="selectAllUser" resultMap="userInfoForEasemobMap">
+		SELECT id,id as password,username FROM `user`
+	</select>
+	<resultMap type="UserInfoForEasemob" id="userInfoForEasemobMap">
+		<result property="id" column="id" />
+		<result property="password" column="password" />
+		<result property="nickName" column="username" />
+	</resultMap>
+	<update id="updatePasswdByMobile">
+		update
+		user
+		set password = #{passwd} where
+		mobile = #{mobile}
+	</update>
+</mapper>

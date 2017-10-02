@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.ArtistDao">
+
+
+
+	<sql id="artistLeftJoinUnLogin">
+		artist a
+		left outer join artist_evaluate ae on a.id = ae.uid
+		left outer join artist_opus ao on ao.uid = a.id
+		left outer join
+		artist_announcement aan on a.id = aan.uid
+		left outer join
+		art_performance_evaluation ape on a.id = ape.acceptid
+	</sql>
+	<sql id="artistLeftJoin">
+		artist a
+		left outer join artist_evaluate ae on a.id = ae.uid
+		left outer join artist_opus ao on ao.uid = a.id
+		left outer join
+		artist_announcement aan on a.id = aan.uid
+		left outer join
+		art_performance_evaluation ape on a.id = ape.acceptid
+		left outer join
+		user_attention ua on a.id = ua.uaoid and ua.uid=#{uid}
+	</sql>
+
+
+	<select id="getAtristById" resultMap="artistResult"
+		parameterType="java.util.Map">
+		select * from
+		<include refid="artistLeftJoin"></include>
+		where a.id = #{id}
+	</select>
+	<select id="getAtristByIdUnLogin" resultMap="artistResultUnLogin"
+		parameterType="java.util.Map">
+		select * from
+		<include refid="artistLeftJoinUnLogin"></include>
+		where a.id = #{id}
+	</select>
+	<update id="updateLatAndLngById" parameterType="String">
+		update artist set lat=#{lat},lng=#{lng} where id=#{id}
+	</update>
+	<insert id="addAttention">
+		insert into user_attention
+		(uaid,type,uaoid,uid,uatime,uastate)
+		value(#{uaid},#{type},#{oid},#{uid},now(),1)
+	</insert>
+	<resultMap type="ArtistDetailView" id="artistResultUnLogin">
+		<id property="id" column="id" />
+		<result property="stageName" column="stagename" />
+		<result property="performanceTypeId" column="performancetypeid" />
+		<result property="specialty" column="specialty" />
+		<result property="singularNum" column="singularnum" />
+		<result property="completeNum" column="completenum" />
+		<result property="fanNum" column="fannum" />
+		<result property="rateOfpraise" column="rateofpraise" />
+		<result property="birthday" column="birthday" />
+		<result property="minSalary" column="minsalary" />
+		<result property="address" column="address" />
+		<result property="selfIntroduction" column="selfintroduction" />
+		<result property="constellation" column="constellation" />
+		<result property="bloodType" column="bloodtype" />
+		<result property="stature" column="stature" />
+		<result property="weight" column="weight" />
+		<result property="bwh" column="bwh" />
+		<result property="graduateSchool" column="graduateschool" />
+		<result property="educationalBackground" column="educationalbackground" />
+		<result property="artisticCareer" column="artisticcareer" />
+		<result property="isAcceptInvitation" column="isacceptinvitation" />
+		<result property="performanceList" column="performancelist" />
+		<result property="biographyList" column="biographylist" />
+		<result property="biographyHighest" column="biographyhighest" />
+		<result property="isAuth" column="isauth" />
+		<result property="honestyLevel" column="honestylevel" />
+		<result property="pic" column="pic" />
+		<result property="homepic" column="homepic" />
+		<result property="sex" column="sex" />
+		<collection property="artistAnnouncementList" javaType="ArrayList"
+			column="aid" ofType="ArtistAnnouncementV" resultMap="artistAnnouncementResult" />
+		<collection property="artistOpusList" javaType="ArrayList"
+			column="oid" ofType="ArtistOpusV" resultMap="artistOpusResult" />
+		<collection property="artistEvaluateList" javaType="ArrayList"
+			column="eid" ofType="ArtistEvaluate" resultMap="artistEvaluateResult" />
+		<collection property="aPEList" javaType="ArrayList" column="apeId"
+			ofType="ArtPerformanceEvaluation" resultMap="artPerformanceEvaluateResult" />
+	</resultMap>
+	<resultMap type="ArtistDetailView" id="artistResult">
+		<id property="id" column="id" />
+		<result property="stageName" column="stagename" />
+		<result property="performanceTypeId" column="performancetypeid" />
+		<result property="specialty" column="specialty" />
+		<result property="singularNum" column="singularnum" />
+		<result property="completeNum" column="completenum" />
+		<result property="fanNum" column="fannum" />
+		<result property="rateOfpraise" column="rateofpraise" />
+		<result property="birthday" column="birthday" />
+		<result property="minSalary" column="minsalary" />
+		<result property="address" column="address" />
+		<result property="selfIntroduction" column="selfintroduction" />
+		<result property="constellation" column="constellation" />
+		<result property="bloodType" column="bloodtype" />
+		<result property="stature" column="stature" />
+		<result property="weight" column="weight" />
+		<result property="bwh" column="bwh" />
+		<result property="graduateSchool" column="graduateschool" />
+		<result property="educationalBackground" column="educationalbackground" />
+		<result property="artisticCareer" column="artisticcareer" />
+		<result property="isAcceptInvitation" column="isacceptinvitation" />
+		<result property="performanceList" column="performancelist" />
+		<result property="biographyList" column="biographylist" />
+		<result property="biographyHighest" column="biographyhighest" />
+		<result property="isAuth" column="isauth" />
+		<result property="honestyLevel" column="honestylevel" />
+		<result property="pic" column="pic" />
+		<result property="homepic" column="homepic" />
+		<result property="sex" column="sex" />
+
+		<collection property="artistAnnouncementList" javaType="ArrayList"
+			column="aid" ofType="ArtistAnnouncementV" resultMap="artistAnnouncementResult" />
+		<collection property="artistOpusList" javaType="ArrayList"
+			column="oid" ofType="ArtistOpusV" resultMap="artistOpusResult" />
+		<collection property="artistEvaluateList" javaType="ArrayList"
+			column="eid" ofType="ArtistEvaluate" resultMap="artistEvaluateResult" />
+		<collection property="aPEList" javaType="ArrayList" column="apeId"
+			ofType="ArtPerformanceEvaluation" resultMap="artPerformanceEvaluateResult" />
+		<collection property="uAttention" javaType="UserAttentionV"
+			column="uaId" ofType="UserAttentionV" resultMap="userAttentionResult" />
+	</resultMap>
+	<resultMap type="ArtPerformanceEvaluation" id="artPerformanceEvaluateResult">
+		<id property="apeId" column="apeid" />
+		<result property="title" column="title" />
+		<result property="description" column="descript" />
+		<result property="releaseTime" column="eareleasetime" />
+		<result property="userName" column="username" />
+		<result property="acceptId" column="acceptid" />
+		<result property="state" column="state" />
+	</resultMap>
+	<resultMap type="ArtistAnnouncementV" id="artistAnnouncementResult">
+		<id property="aid" column="aid" />
+		<result property="content" column="content" />
+		<result property="beginTime" column="begintime" />
+		<result property="endTime" column="endtime" />
+		<result property="state" column="state" />
+	</resultMap>
+
+	<resultMap type="ArtistOpusV" id="artistOpusResult">
+		<id property="oid" column="oid" />
+		<result property="name" column="name" />
+		<result property="description" column="description" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="releaseId" column="releaseid" />
+		<result property="type" column="type" />
+		<result property="fileName" column="homepic_opus" />
+		<result property="filePath" column="picpath" />
+		<result property="praiseNum" column="praisenum" />
+		<result property="playNum" column="playnum" />
+		<result property="kind" column="kind" />
+		<result property="label" column="label" />
+
+	</resultMap>
+	<resultMap type="ArtistEvaluate" id="artistEvaluateResult">
+		<id property="eid" column="eid" />
+		<result property="uid" column="uid" />
+		<result property="evaluateId" column="evaluateid" />
+		<result property="type" column="type" />
+		<result property="value" column="value" />
+	</resultMap>
+	<resultMap type="UserAttentionV" id="userAttentionResult">
+		<id property="uaId" column="uaid" />
+		<result property="state" column="uastate" />
+
+	</resultMap>
+
+
+</mapper>

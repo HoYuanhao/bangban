@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.ArtistOpusDao">
+
+	<!-- 修改小样的点赞数 -->
+	<update id="updatePraise" parameterType="java.util.Map">
+	update artist_opus set praisenum =praisenum+#{value}
+	where oid=#{oid}
+	</update>
+	<!-- 修改艺人的好评数据和完成数据 -->
+	<update id="updateGoodLevel" parameterType="java.util.Map">
+	update artist set completenum=completenum+1,praisenumofartist=praisenumofartist+#{praise}
+	where id=#{artistid};
+	update artist set rateofpraise=praisenumofartist/completenum
+	where id=#{artistid};
+	</update>
+
+	<!-- 新建小样 -->
+	<insert id="insertArtistOpus" parameterType="com.xunyanhui.model.ArtistOpus" >
+		insert into
+		artist_opus(oid,uid,name,description,releasetime,releaseid,type,filename,filepath,label,kind,homepic_opus)
+		values(#{oid},#{uid},#{name},#{description},now(),#{uid},#{type},#{fileName},#{filePath},#{label},#{kind},#{homePic})
+	</insert>
+	<!-- 小样封面图片维护 -->
+	<update id="updateArtistOpusHomePic" parameterType="com.xunyanhui.model.ArtistOpus" >
+		update artist_opus
+		set homepic_opus=#{homePic},homepicpath=#{homePicPath}
+		where oid=#{oid}
+	</update>
+	<!-- 小样基本信息维护,使用动态数据来决定数据文件是否更新 -->
+	<update id="updateArtistOpus" parameterType="com.xunyanhui.model.ArtistOpus" >
+		update artist_opus
+		set name=#{name},description=#{description},type=#{type},label=#{label},kind=#{kind}
+		where oid=#{oid}
+	</update>
+	<!--读取小样所属的艺人id  -->
+	<select id="checkUidOfOpus" parameterType="Map" resultType="String">
+	select uid from artist_opus where oid=#{oid}
+	</select>
+	
+	<!-- 增加小样的播放数 ，每有用户查看一次小样详情即增加一次小样的播放数-->
+	<update id="incPlayNum" parameterType="java.util.Map">
+	UPDATE artist_opus SET playnum=playnum+1 WHERE oid=#{oid}
+	</update>
+	
+	<!--  
+	<resultMap type="HomePic" id="homePicResult">
+		<id property="id" column="id" />
+		<result property="picPath" column="pic_path" />
+		<result property="content" column="content" />
+	</resultMap>
+	-->
+</mapper>

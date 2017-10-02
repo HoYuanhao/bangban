@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.UserSubscribeDao">
+	<!-- 查询指定用户的演艺活动订阅情况 -->
+	<select id="selectUserSubscribeByUid" parameterType="String"  resultMap="userSubscribeV">
+		select *
+		from user_subscribe
+		where uid=#{uid}
+	</select>
+	<!-- 更改某一用户指定的某一演艺活动的订阅情况 -->
+	<update id="updateUserSubscribeByUid" parameterType="java.util.Map">
+		update user_subscribe
+		set substate=#{substate},subtime=now()
+		where uid=#{uid} and pid=#{pid}
+	</update>
+	<!-- 找出所有订阅了某一演艺活动的用户 -->
+	<select id="selectSubscribeByPid" parameterType="String"  resultMap="userSubscribeVS">
+		select *
+		from user_subscribe,user
+		where user.id=user_subscribe.uid and pid=#{pid} and substate=1
+	</select>
+	<!-- 找出所有关注帮办的类型 -->
+	<select id="selectPerformancetype" resultMap="performancetype">
+	select * 
+	from performancetype
+	</select>
+	<!-- 通过用户ID往user_subscribe表中添加默认帮办类型 -->
+	<insert id="addSubscribeBypid" parameterType="java.util.List">
+	
+	insert into user_subscribe(uid,pid,substate,subtime) 
+	values
+	<foreach collection="list" item="item" index="index" separator="," >  
+        ( #{item.uid},#{item.pid},
+        #{item.subState},now())
+    </foreach>  
+	
+	
+	</insert>
+	<resultMap type="UserSubscribeV" id="userSubscribeV">
+		<result property="uid" column="uid" />
+		<result property="pid" column="pid" />
+		<result property="subState" column="substate" />
+	</resultMap>
+	
+	<resultMap type="UserSubscribeVS" id="userSubscribeVS">
+		<result property="uid" column="uid" />
+		<result property="cid" column="cid" />
+	</resultMap>
+	
+	<resultMap type="Performancetype" id="performancetype">
+	<result property="pid" column="pid"/>
+	<result property="peiformname" column="peiformname"/>
+	</resultMap>
+</mapper>

@@ -1,0 +1,20 @@
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">  
+    <html>  
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <head>     
+        <title>My JSP 'test.jsp' starting page</title>    
+      </head>    
+      <body>  
+       RESTful 风格 post  
+        <form name="" 
+        action="http://192.168.2.240:8089/xunyanhui/activemsg/newActiveMessge/.json"
+         method="POST" enctype="multipart/form-data">  
+            <input type="hidden" name="uid" value="23">  
+            内容<input type="text" name="details">  
+           标题<input type="text" name="topic"> 
+    发送范围<input type="text" name="scope">  
+            封面图片<input type="file" name="file"> 
+            <input type="submit" value="测试 POST">  
+        </form>  
+      </body>  
+    </html>  

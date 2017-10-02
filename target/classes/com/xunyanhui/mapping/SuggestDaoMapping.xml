@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.SuggestDao">
+
+	<!-- 新建建议或反馈 -->
+	<insert id="newSuggest" parameterType="Suggest">
+	insert suggest(uid,suggesttime,description,state,contact)
+	values(#{uid},now(),#{description},#{state},#{contact})
+	</insert>
+	
+	
+	
+</mapper>

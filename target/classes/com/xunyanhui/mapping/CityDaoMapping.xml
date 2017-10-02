@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.CityDao">
+<!-- 
+	<update id="updateCcity" parameterType="java.util.Map">
+		update user
+		set ccity=#{ccity} where id=#{id}
+	</update> 
+	<select id="getCityByUid" parameterType="String" resultType="String">
+		select ccity
+		from user where id=#{id}
+	</select>
+	-->
+	<!-- 读取指定账户的余额账户已uid为id -->
+	<select id="getCityList" parameterType="Map" resultMap="cityResult">
+		select *
+		from city
+		order by pinyin asc
+	</select>
+	<resultMap type="City" id="cityResult">
+		<!--普通属性映射 -->
+		<result property="name" column="name" />
+		<result property="pinyin" column="pinyin" />
+		<result property="artistNum" column="artistnum" />
+		<result property="perNum" column="pernum" />
+	</resultMap>
+
+</mapper>

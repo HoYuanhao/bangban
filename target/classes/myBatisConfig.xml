@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+	<configuration>
+	<settings>
+		<setting name="lazyLoadingEnabled" value="false" />
+	</settings>
+	<typeAliases>
+		<typeAlias alias="AuthFile" type="com.xunyanhui.model.AuthFile" />
+		<typeAlias alias="Artist" type="com.xunyanhui.model.Artist" />
+		<typeAlias alias="Account" type="com.xunyanhui.model.Account" />
+		<typeAlias alias="AccountCard" type="com.xunyanhui.model.AccountCard" />
+		<typeAlias alias="AccountCardL" type="com.xunyanhui.bean.AccountCardL" />
+		<typeAlias alias="AccountBalance" type="com.xunyanhui.bean.AccountBalance" />
+		<typeAlias alias="Advice" type="com.xunyanhui.model.Advice" />
+		<typeAlias alias="ArtistAnnouncement" type="com.xunyanhui.model.ArtistAnnouncement" />
+		<typeAlias alias="ArtistOpus" type="com.xunyanhui.model.ArtistOpus" />
+		<typeAlias alias="ArtistAnnouncementV" type="com.xunyanhui.bean.ArtistAnnouncementV" />
+		<typeAlias alias="ArtistOpusV" type="com.xunyanhui.model.ArtistOpusV" />
+		<typeAlias alias="ArtistBiography" type="com.xunyanhui.model.ArtistBiography" />
+		<typeAlias alias="ArtistEvaluate" type="com.xunyanhui.model.ArtistEvaluate" />
+		<typeAlias alias="ArtistEvaluateType" type="com.xunyanhui.model.ArtistEvaluateType" />
+		
+		<typeAlias alias="ArtistAdept" type="com.xunyanhui.model.ArtistAdept" />
+		<typeAlias alias="ArtistAnnouncement" type="com.xunyanhui.model.ArtistAnnouncement" />
+		<typeAlias alias="ArtistAnnouncementV" type="com.xunyanhui.bean.ArtistAnnouncementV" />
+		<typeAlias alias="ArtistPerforEvaluate" type="com.xunyanhui.model.ArtistPerforEvaluate" />
+		<typeAlias alias="ArtPerformanceEntry" type="com.xunyanhui.model.ArtPerformanceEntry" />
+		<typeAlias alias="ActiveMessageList" type="com.xunyanhui.model.ActiveMessageList" />
+		
+		<typeAlias alias="ArtistDetailView" type="com.xunyanhui.model.ArtistDetailView" />
+		<typeAlias alias="ArtistAttenListV" type="com.xunyanhui.bean.ArtistAttenListV" />
+		<typeAlias alias="ArtistSelfInfo" type="com.xunyanhui.bean.ArtistSelfInfo" />
+		<typeAlias alias="ArtistSelfMoreInfo" type="com.xunyanhui.bean.ArtistSelfMoreInfo" />
+		
+		<typeAlias alias="ArtistType" type="com.xunyanhui.model.ArtistType" />
+		<typeAlias alias="ArtPerformanceEvaluation"
+			type="com.xunyanhui.model.ArtPerformanceEvaluation" />
+		<typeAlias alias="AuthState" type="com.xunyanhui.bean.AuthState" />
+			
+		<typeAlias alias="Bill" type="com.xunyanhui.bean.Bill" />
+		<typeAlias alias="Coupon" type="com.xunyanhui.model.Coupon" />
+		<typeAlias alias="City" type="com.xunyanhui.model.City" />
+		<typeAlias alias="Complain" type="com.xunyanhui.model.Complain" />
+		<typeAlias alias="Suggest" type="com.xunyanhui.bean.Suggest" />
+		<typeAlias alias="EntryRecord" type="com.xunyanhui.model.EntryRecord" />
+		<typeAlias alias="EntryRecordN" type="com.xunyanhui.model.EntryRecordN" />
+		<typeAlias alias="EvaluationOpus" type="com.xunyanhui.bean.EvaluationOpus" />
+		<typeAlias alias="Employer" type="com.xunyanhui.model.Employer" />
+
+		<typeAlias alias="HomePic" type="com.xunyanhui.model.HomePic" />
+		
+		<typeAlias alias="MyArtistOpus" type="com.xunyanhui.bean.MyArtistOpus" />
+		<typeAlias alias="MyArtistOpusL" type="com.xunyanhui.bean.MyArtistOpusL" />
+		<typeAlias alias="MyPerformance" type="com.xunyanhui.bean.MyPerformance" />
+		<typeAlias alias="MyPerformanceDetail" type="com.xunyanhui.bean.MyPerformanceDetail" />
+		
+		<typeAlias alias="Performance" type="com.xunyanhui.model.Performance" />
+		
+		<typeAlias alias="SignupArtistOfPerf" type="com.xunyanhui.bean.SignupArtistOfPerf" />
+		<typeAlias alias="SignupArtist" type="com.xunyanhui.bean.SignupArtist" />
+		<typeAlias alias="SystemPrivateMessageList"
+			type="com.xunyanhui.model.SystemPrivateMessageList" />
+			<typeAlias alias="SystemMessage" type="com.xunyanhui.model.SystemMessage" />
+		<typeAlias alias="SystemMessageList" type="com.xunyanhui.model.SystemMessageList" />
+		<typeAlias alias="TransactionRecord" type="com.xunyanhui.model.TransactionRecord" />
+		<typeAlias alias ="Performancetype" type="com.xunyanhui.bean.Performancetype"/>
+		<typeAlias alias="User" type="com.xunyanhui.model.User" />
+		<typeAlias alias="UserAttentionV" type="com.xunyanhui.model.UserAttentionV" />
+		<typeAlias alias="UserSubscribeV" type="com.xunyanhui.bean.UserSubscribeV" />
+		<typeAlias alias="UserSubscribeVS" type="com.xunyanhui.bean.UserSubscribeVS" />
+		<typeAlias alias="UserInfoSimple" type="com.xunyanhui.bean.UserInfoSimple" />
+		<typeAlias alias="UserInfoForEasemob" type="com.xunyanhui.bean.UserInfoForEasemob"/>
+		<typeAlias alias="Distance" type="com.xunyanhui.bean.Distance"/>
+	</typeAliases>
+</configuration>

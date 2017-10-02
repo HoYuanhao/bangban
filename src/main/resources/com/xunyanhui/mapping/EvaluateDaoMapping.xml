@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.EvaluateDao">
+<!-- 用于实现评论有关的操作，包括小样评论，演艺评论与艺人打分 -->
+	
+	<!-- 用于判断用对指定的小样或作品/演艺/是否点赞和好评-->
+	<select id="isGoodLevel" parameterType="java.util.Map" resultType="Integer">
+	select count(*)
+	from evaluation_details
+	where objectid=#{objectid} and releaseid=#{releaseid} and typename='1' and evaluatetype=#{evaluatetype}
+	</select>
+	<!-- 对指定的小样或作品/演艺/进行点赞或好评-->
+	<update id="inGoodLevel" parameterType="java.util.Map" >
+		update evaluation_details set evalevel=#{state},releasetime=now()
+		where objectid=#{objectid} and releaseid=#{releaseid} and typename='1' and evaluatetype=#{evaluatetype}
+	</update>
+	<!-- 对指定的小样或作品/演艺新建点赞或好评-->
+	<insert id="newGoodLevel" parameterType="java.util.Map" >
+		insert evaluation_details(id,typename,objectid,releaseid,evaluatetype,evalevel,releasetime,acceptid)
+		values(#{id},1,#{objectid},#{releaseid},#{evaluatetype},1,now(),#{acceptid})
+	</insert>
+	<!-- 读取指定的用户指定的小样或作品/演艺的点赞和好评情况-->
+	<select id="getGoodLevel" parameterType="java.util.Map" resultType="Integer" >
+		select evalevel
+		from evaluation_details
+		where objectid=#{objectid} and releaseid=#{releaseid} and typename='1' and evaluatetype=#{evaluatetype}
+	</select>
+	<!-- 读取指定的用户指定的艺人承担的指定演艺活动的好评情况-->
+	<select id="getGoodLevelOfPerfor" parameterType="java.util.Map" resultType="Integer" >
+		select evalevel
+		from evaluation_details
+		where acceptid=#{acceptid} and objectid=#{objectid} and releaseid=#{releaseid} and typename='1' and evaluatetype=#{evaluatetype}
+	</select>
+	
+	<!-- 艺人完成演艺后是否接受到发布人的打分评价-->
+	<select id="isScore" parameterType="java.util.Map">
+	select count(*)
+	from artist_perfor_evaluate
+	where uid=#{uid} and performanceid=#{performanceid}
+	</select>
+	<!-- 读取系统支持的用户可以打分评价项列表-->
+	<select id="getScoreList" parameterType="java.util.Map" resultMap="scoreResult">
+		select *
+		from artist_evaluate_type
+	</select>
+	<resultMap type="ArtistEvaluateType" id="scoreResult">
+		<id property="id" column="id" />
+		<result property="evaluateId" column="evaluateId" />
+		<result property="type" column="type" />
+		<result property="value" column="value" />
+	</resultMap>
+	<!-- 读取艺人在指定演艺活动上得到的打分项-->
+	<select id="getScoreArtistOfPerfor" parameterType="java.util.Map" resultMap="scoreProferResult">
+		select *
+		from artist_perfor_evaluate
+		where uid=#{artistid} and performanceid=#{performanceid}
+	</select>
+	<resultMap type="ArtistPerforEvaluate" id="scoreProferResult">
+		<id property="id" column="id" />
+		<result property="uid" column="uid" />
+		<result property="evaluateId" column="evaluateId" />
+		<result property="type" column="type" />
+		<result property="value" column="value" />
+		<result property="performanceId" column="performanceid" />
+	</resultMap>
+	<!-- 读取艺人在指定演艺活动上得到的评论-->
+	<select id="getCommentArtistOfPerfor" parameterType="java.util.Map" resultType="String">
+		select description
+		from evaluation_details
+		where acceptid=#{artistid} and objectid=#{performanceid} and releaseid=#{uid} and typename=2
+	</select>
+	<!-- 对指定的小样或作品/演艺新建评论-->
+	<insert id="newCommentArtist" parameterType="java.util.Map" >
+		insert evaluation_details(id,typename,objectid,releaseid,evaluatetype,description,releasetime,acceptid)
+		values(#{id},2,#{objectid},#{releaseid},#{evaluatetype},#{description},now(),#{artistid})
+	</insert>
+	
+	<!-- 写入艺人完成演艺后的打分值，-->
+	<insert id="addArtistPerforEvaluate"  parameterType="List">    
+        insert into artist_perfor_evaluate (uid,evaluateid,type,value,performanceid)   
+        values  
+        <foreach collection="list" item="item" index="index"  separator="," >  
+            (#{item.uid},#{item.evaluateId},#{item.type},#{item.value},#{item.performanceId})  
+        </foreach>  
+    </insert>  
+    <!-- 读小样/作品的作者Id -->
+    <select id="getOpusAuthor" parameterType="java.util.Map" resultType="String">
+    select uid
+    from artist_opus
+    where oid =#{oid}
+    </select>
+	
+	
+	<!-- 修改作品的点赞数据，+1是增加，-1是减少 -->
+	<update id="updatePriseOfOpus" parameterType="java.util.Map">
+	UPDATE artist_opus SET praisenum=praisenum+#{value} WHERE oid = #{oid}
+	</update>
+	<!-- 修改艺人的好评数 -->
+	<update id="updatePriseOfArtist" parameterType="java.util.Map">
+	UPDATE artist SET praisenumofartist=praisenumofartist+1 WHERE id=#{uid}
+	</update>
+	<!-- 修改艺人的好评率，使用好评数与完成数据来计算好评率 -->
+	<update id="updatePriseRateOfArtist" parameterType="java.util.Map">
+	UPDATE artist SET rateofpraise=(praisenumofartist/completenum) WHERE id=#{uid}
+	</update>
+	
+	<!-- 修改艺人的演艺活动完成数-->
+	<update id="updateCompleteOfArtist" parameterType="java.util.Map">
+	UPDATE artist SET completenum=completenum+1 WHERE id=#{uid}
+	</update>
+	
+	<!-- 修改艺人的各项评价值，用原评价值与新评价值进行平均 -->
+	<insert id="updateArtistofEvaluate"  parameterType="java.util.Map">    
+       UPDATE artist_evaluate a_e,artist_perfor_evaluate a_p_e 
+       SET  a_e.`value`=(a_e.`value`+a_p_e.`value`)/2 
+       WHERE a_e.uid=a_p_e.uid AND a_e.uid=#{uid} and a_p_e.performanceid=#{performanceid}
+    </insert>  
+	
+	
+	
+	
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+	http://www.springframework.org/schema/util 
+	http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/mvc 
+	http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+
+
+
+	<!-- 使用Shiro自带的JdbcRealm类 指定密码匹配所需要用到的加密对象 指定存储用户、角色、权限许可的数据源及相关查询语句 -->
+	<!-- <bean id="jdbcRealm" class="org.apache.shiro.realm.jdbc.JdbcRealm"> 
+		<property name="credentialsMatcher" ref="credentialsMatcher"></property> 
+		<property name="permissionsLookupEnabled" value="true"></property> <property 
+		name="dataSource" ref="dataSource"></property> <property name="authenticationQuery" 
+		value="SELECT password FROM sec_user WHERE user_name = ?"></property> <property 
+		name="userRolesQuery" value="SELECT role_name from sec_user_role left join 
+		sec_role using(role_id) left join sec_user using(user_id) WHERE user_name 
+		= ?"></property> <property name="permissionsQuery" value="SELECT permission_name 
+		FROM sec_role_permission left join sec_role using(role_id) left join sec_permission 
+		using(permission_id) WHERE role_name = ?"></property> </bean> -->
+
+
+	<!-- Shiro安全管理器 -->
+	<!-- <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean> 
+		<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" 
+		depends-on="lifecycleBeanPostProcessor" /> -->
+	<!-- Realm实现 -->
+	<!-- 原始的Realm实现 <bean id="myRealm" class="com.jay.demo.shiro.UserRealm"> 
+		<property name="userService" ref="userService" /> </bean> -->
+	<!-- <bean id="userService" class="com.xunyanhui.service.impl.UserServiceImpl" 
+		/> -->
+
+	<bean id="loginRealm" class="com.xunyanhui.security.realm.LoginRealm">
+	</bean>
+	<!-- 无状态Realm实现 -->
+	<bean id="statelessRealm" class="com.xunyanhui.security.realm.StatelessRealm">
+		<property name="cachingEnabled" value="false" />
+	</bean>
+	<!-- 无状态Subject工厂 -->
+	<bean id="subjectFactory"
+		class="com.xunyanhui.security.mgt.StatelessDefaultSubjectFactory" />
+	<!-- 原来的安全管理器 <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor"> 
+		<property name="securityManager" ref="securityManager" /> </bean> -->
+
+
+	<!-- 会话ID生成器 -->
+	<bean id="sessionIdGenerator"
+		class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator" />
+	<!-- 会话DAO -->
+	<bean id="sessionDAO"
+		class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+		<property name="activeSessionsCacheName" value="shiro-activeSessionCache" />
+		<property name="sessionIdGenerator" ref="sessionIdGenerator" />
+	</bean>
+	<!-- 会话验证调度器 -->
+	<bean id="sessionValidationScheduler"
+		class="org.apache.shiro.session.mgt.quartz.QuartzSessionValidationScheduler">
+		<property name="sessionValidationInterval" value="1800000" />
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+	<!-- 会话Cookie模板 -->
+	<bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+		<constructor-arg value="sid" />
+		<property name="httpOnly" value="true" />
+		<property name="maxAge" value="180000" />
+	</bean>
+	<!-- 会话管理器 -->
+	<bean id="sessionManager"
+		class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+		<property name="globalSessionTimeout" value="1800000" />
+		<property name="deleteInvalidSessions" value="true" />
+		<property name="sessionValidationSchedulerEnabled" value="true" />
+		<property name="sessionValidationScheduler" ref="sessionValidationScheduler" />
+		<property name="sessionDAO" ref="sessionDAO" />
+		<property name="sessionIdCookieEnabled" value="true" />
+		<property name="sessionIdCookie" ref="sessionIdCookie" />
+	</bean>
+	<!-- 安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realms">
+			<list>
+				<ref bean="loginRealm" />
+				<ref bean="statelessRealm" />
+			</list>
+		</property>
+
+		<property name="subjectDAO.sessionStorageEvaluator.sessionStorageEnabled"
+			value="false" />
+		<property name="subjectFactory" ref="subjectFactory" />
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+	<!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+			value="org.apache.shiro.SecurityUtils.setSecurityManager" />
+		<property name="arguments" ref="securityManager" />
+	</bean>
+	<!-- 自定义的过滤器 -->
+
+	<bean id="statelessAuthcFilter" class="com.xunyanhui.security.filter.StatelessAuthcFilter" />
+	<!-- Shiro的Web过滤器，无状态的 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="filters">
+			<util:map>
+				<entry key="statelessAuthc" value-ref="statelessAuthcFilter" />
+			</util:map>
+		</property>
+		<property name="filterChainDefinitions">
+			<value>
+
+				/user/**=anon
+				/restful/hello=statelessAuthc
+				/hello1=anon
+				/jms-controller/send.json=anon
+				/message/**=anon<!-- 该action需要登录访问 -->
+				/static/**=anon
+				/upload=anon
+				/perf/**=anon
+				/activemsg/getList/**=anon
+				/activemsg/getListManage/**=anon<!-- 该action需要登录访问 -->
+				/activemsg/newActiveMessge**=anon<!-- 该action需要登录访问 -->
+				/realname/uploadFile**=anon
+				/artist/getArtiseById/**=anon
+				/artistOpus/uploadDemo/**=anon
+				/register/**=anon
+				/userSub/getByUser/**=anon
+				/userSub/updateSubByUser/**=anon
+				/userSub/updateSubAllByUser/**=anon
+				/myArtPerf/getEntryList/**=anon
+			</value>
+		</property>
+	</bean>
+	<!-- Shiro主过滤器本身功能十分强大，其强大之处就在于它支持任何基于URL路径表达式的、自定义的过滤器的执行 Web应用中，Shiro可控制的Web请求必须经过Shiro主过滤器的拦截，Shiro对基于Spring的Web应用提供了完美的支持 
+		<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean"> 
+		<property name="securityManager" ref="securityManager" /> <property name="loginUrl" 
+		value="/login" /> <property name="successUrl" value="/user/list" /> <property 
+		name="unauthorizedUrl" value="/login" /> <property name="filterChainDefinitions"> 
+		<value> /base=authc /login=anon /user/**=authc /role/edit/*=perms[role:edit] 
+		/role/save=perms[role:edit] /role/list=perms[role:view] /**=authc </value> 
+		</property> </bean> -->
+	<!-- <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager" 
+		> <property name="realm" ref="myRealm" /> </bean > -->
+	<!-- 数据库保存的密码是使用MD5算法加密的，所以这里需要配置一个密码匹配对象 -->
+	<bean id="credentialsMatcher" class="org.apache.shiro.authc.credential.Md5CredentialsMatcher"></bean>
+
+	<!-- 缓存管理 -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager"></bean>
+	<!-- 开启Shiro的注解(如@RequiresRoles，@RequiresPermissions)，需借助SpringAOP扫描使用Shiro注解的类， 
+		并在必要时进行安全逻辑验证 -->
+	<!-- <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"></bean> 
+		<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor"> 
+		<property name="securityManager" ref="securityManager"></property> </bean> -->
+</beans>  

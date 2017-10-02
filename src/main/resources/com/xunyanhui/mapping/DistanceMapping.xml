@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.DistanceDao">
+
+<resultMap type="Distance" id="distanceResult">
+<id property="id" column="id"></id>
+<result property="lng" column="lng" />
+<result property="lat" column="lat" />
+</resultMap>
+
+<select id="getUserLatAndLngById" parameterType="String" resultMap="distanceResult">
+	select id,lng,lat
+	from artist
+	where id=#{id}
+	</select>
+	
+	<select id="getBangbanLatAndLngById" parameterType="String" resultMap="distanceResult">
+	select id,lng,lat
+	from art_performance
+	where id=#{id}
+	</select>
+</mapper>

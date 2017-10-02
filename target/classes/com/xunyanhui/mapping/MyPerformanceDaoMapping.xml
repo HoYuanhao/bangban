@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xunyanhui.dao.MyPerformanceDao">
+	
+	<!-- 获取指定艺人发布的某一演艺详情 -->
+	<select id="getPerformanceDetailsOfUser" resultMap="performanceResult">
+		select <!-- ap.id,er.erid,er.performanceid -->
+		* from
+		art_performance ap where
+		ap.id = #{performanceid} and ap.uid=#{uid}
+	</select>
+	<resultMap type="MyPerformanceDetail" id="performanceResult">
+		<id property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="auditState" column="auditstate" />
+		<result property="address" column="address" />
+		<result property="type" column="type" />
+		<result property="performBeginTime" column="perform_begin_time" />
+		<result property="performEndTime" column="perform_end_time" />
+		<result property="require" column="require_" />
+		<result property="salary" column="salary" />
+		<result property="gender" column="gender" />
+		<result property="salaryDescription" column="salarydescription" />
+		<result property="contacts" column="contacts" />
+		<result property="contactway" column="contactway" />
+		<result property="signupNum" column="signup_num" />
+		<result property="numberOfApplicants" column="numofapplicants" />
+		<result property="endTime" column="endtime" />
+		<result property="beginTime" column="begin_time" />
+		<result property="signupState" column="signup_state" />
+		<result property="stature" column="stature" />
+		<result property="language" column="language" />
+		
+		<result property="city" column="city" />
+		<!--  
+		<collection property="entryRecords" javaType="ArrayList"
+			column="erid" ofType="EntryRecord" resultMap="entryRecordResult"></collection>-->
+	</resultMap>
+	
+	<!-- 得到某一报名情况的详细信息 -->
+	<select id="getEntryRecord" resultMap="entryRecordResult">
+		select *
+		from entry_record 
+		WHERE artistid=#{artistid} and performanceid=#{performanceid}
+	</select>
+	<resultMap type="EntryRecordN" id="entryRecordResult">
+		<id property="erid" column="erid" />
+		<result property="artistid" column="artistid" />
+		<result property="performanceid" column="performanceid" />
+		<result property="sigupTime" column="siguptime" />
+		<result property="price" column="price" />
+		<result property="description" column="description" />
+		<result property="state" column="state" />
+	</resultMap>
+	<!-- 检查某一演艺与发布人之间的关系 -->
+	<select id="checkPerformanceOfUser" resultType="Integer">
+	SELECT COUNT(*) 
+	FROM art_performance 
+	WHERE uid=#{uid} and id=#{performanceid}
+	</select>
+	
+	<!-- 维护演艺报名状态--> 
+	<update id="updateEntryState" parameterType="java.util.Map">
+		update entry_record
+		set state=${state} 
+		WHERE performanceid=#{performanceid} and artistid=#{artistid}
+	</update>
+	
+	
+	
+	<!-- 检查指定用户(uid)是否是艺人 -->
+	<select id="isArtist" parameterType="java.util.Map" resultType="Integer">
+	select count(*)
+	from artist
+	where id=#{uid} 
+	</select>
+	<!-- 检查指定用户(uid)是否对某一艺人(oid)进行了关注 -->
+	<select id="getAttention" parameterType="java.util.Map" resultType="Integer">
+	select count(*)
+	from user_attention
+	where uid=#{uid} and uaoid=#{oid} and type=1
+	</select>
+	<!-- 指定用户对某一艺人新建关注 -->
+	<insert id="newAttention" parameterType="java.util.Map">
+	insert into user_attention
+	(uaid,type,uaoid,uid,uatime,uastate)
+	value(#{uaid},1,#{oid},#{uid},now(),1)
+	</insert>
+	<!--更新用户关注内容  -->
+	<update id="updateAttention" parameterType="java.util.Map" >
+	update user_attention
+	set uastate=#{uastate},uatime=now() where uid=#{uid} and uaoid=#{uaoid}
+	</update>
+	
+	<!-- 添加用户通告 -->
+	<insert id="newAnnounce" parameterType="com.xunyanhui.model.ArtistAnnouncement">
+		insert into artist_announcement(aid,uid,content,begintime,endtime,releasetime,state)
+		values(#{aid},#{uid},#{content},#{beginTime},#{endTime},now(),'1')
+	</insert>
+	<!-- 删除通告，实现方法是将state的值由1变成0 -->
+	<update id="cancelAnnounce" parameterType="java.util.Map">
+		update artist_announcement set state='0'
+		where aid=#{aid} and uid=#{uid}
+	</update>
+	<!-- 获取指定用户的通告列表 -->
+	<select id="getAnnounceOfArtist" resultMap="artistAnnouncement">
+		select aid,content,DATE_FORMAT(begintime,'%Y.%m.%d') as begintime,
+		DATE_FORMAT(endtime,'%Y.%m.%d') as endtime,
+		state as state,
+		DATE_FORMAT(releasetime,'%Y.%m.%d') as releasetime
+		from artist_announcement
+		where uid=#{uid} and state='1'
+		order by begintime desc
+	</select>
+	<resultMap type="ArtistAnnouncementV" id="artistAnnouncement">
+		<id property="aid" column="aid" />
+		<!--普通属性映射 -->
+		<result property="content" column="content" />
+		<result property="beginTime" column="begintime" />
+		<result property="endTime" column="endtime" />
+		<result property="state" column="state" />
+		<result property="releaseTime" column="releasetime" />
+	</resultMap>
+	
+	<!-- 读取用用户参加的演艺活动列表的列表 -->
+	<select id="getArtPerformanceEntryList" resultMap="artPerformanceEntryResultMap" parameterType="java.util.Map">
+		select *
+		from art_performance_entry
+		where uid=#{uid}
+		order by begin_time desc
+	</select>
+	<resultMap type="ArtPerformanceEntry" id="artPerformanceEntryResultMap">
+		<!--id映射 -->
+		<id property="perid" column="perid" />
+		<!--普通属性映射 -->
+		<result property="title" column="title" />
+		<result property="uid" column="uid" />
+		<result property="state" column="state" />
+		<result property="begin_time" column="begin_time" />
+		<result property="end_time" column="end_time" />
+		<result property="salary" column="salary" />
+		<result property="price" column="price" />
+		<result property="signup_num" column="signup_num" />
+		<result property="singup_state" column="singup_state" />
+		<result property="city" column="city" />
+		<result property="days" column="days" />
+		<result property="type" column="type" />
+	</resultMap>
+	<!-- 读取用户提交的小样/作品的列表 -->
+	<select id="getSelfOpusList" resultMap="artOpusResultMap" parameterType="java.util.Map">
+		select oid,name,playnum,praisenum,pic,picpath,label,kind,type,description,date_format(releasetime,'%Y-%m-%d') as releasetime,homepic_opus
+		from artist_opus
+		where uid=#{uid}
+		order by releasetime desc
+	</select>
+	<resultMap type="MyArtistOpus" id="artOpusResultMap">
+		<!--id映射 -->
+		<id property="oid" column="oid" />
+		<!--普通属性映射 -->
+		<result property="name" column="name" />
+		<result property="playNum" column="playNum" />
+		<result property="praiseNum" column="praiseNum" />
+		<result property="pic" column="pic" />
+		<result property="picPath" column="picPath" />
+		<result property="label" column="label" />
+		<result property="kind" column="kind" />
+		<result property="type" column="type" />
+		<result property="description" column="description" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="homepic" column="homepic_opus" />
+	</resultMap>
+	<!-- 用户对某一演艺活动进行首次报名 -->
+	<insert id="newEnrty">
+	insert into entry_record
+	(erid,artistid,performanceid,siguptime,description,state,price)
+	value(#{erid},#{artistId},#{performanceId},now(),#{description},0,#{price})
+	</insert>
+	
+	
+	<resultMap type="com.xunyanhui.bean.EvaluationOpus" id="evaluationOpus">
+		<id property="oid" column="oid" />
+		<!--普通属性映射 -->
+		<result property="name" column="username" />
+		<result property="releaseid" column="releaseid" />
+		<result property="description" column="description" />
+		<result property="releaseTime" column="releasetime" />
+	</resultMap>
+
+	<resultMap type="com.xunyanhui.bean.MyArtistOpusL" id="myArtistOpusL">
+		<!--id映射 -->
+		<id property="oid" column="oid" />
+		<!--普通属性映射 -->
+		<result property="name" column="name" />
+		<result property="playNum" column="playnum" />
+		<result property="praiseNum" column="praisenum" />
+		<result property="pic" column="pic" />
+		<result property="picPath" column="picPath" />
+		<result property="label" column="label" />
+		<result property="kind" column="kind" />
+		<result property="description" column="description" />
+		<result property="type" column="type" />
+		<result property="fileName" column="filename" />
+		<collection property="evaluationOpusList" select="getPostOfSelfOpus" column="objectid" javaType="ArrayList" ofType="com.xunyanhui.bean.EvaluationOpus"/>
+	</resultMap>
+	
+
+	<!-- 提取用户发布的小样详情 -->
+	<select id="getSelfOpusById" resultMap="myArtistOpusL">
+		SELECT *
+		FROM artist_opus aop
+		where aop.oid=#{objectid}
+	</select>
+	<!-- 提取小样/详情对应的评论 -->
+	<select id="getPostOfSelfOpus" resultMap="evaluationOpus" >
+		SELECT *
+		FROM opus_evaluation  
+		where oid=#{objectid}
+	</select>
+	
+	
+	
+	<!-- 演艺活动中的艺人报名列表，用于演艺列表中进入演艺详情时使用 -->
+	<select id="signupArtistOfPerf"  resultMap="signupArtistOfPerfResultMap" >
+	SELECT entry_record.artistid,artist.stagename,artist.pic
+	from artist,entry_record
+	where entry_record.performanceid=#{performanceid} and entry_record.artistid = artist.id  and state!=4
+	</select>
+	<resultMap type="SignupArtist" id="signupArtistOfPerfResultMap">
+		<!--id映射 -->
+		<id property="id" column="artistid" />
+		<!--普通属性映射 -->
+		<result property="stageName" column="stagename" />
+		<result property="pic" column="pic"/>
+	</resultMap>
+	
+	<!-- 读取用户发布的演艺活动中的艺人报名列表 ，用于我发布的演艺中读取用户详情时使用-->
+	<select id="signupArtistOfPerfByUser"  resultMap="signupArtistOfPerfByUserResultMap" >
+	SELECT entry_record.artistid,entry_record.description,entry_record.price,artist.stagename,artist.specialty,entry_record.state,artist.pic
+	from artist,entry_record
+	where entry_record.performanceid=#{performanceid} and entry_record.artistid=artist.id  and state!=4
+	</select>
+	<resultMap type="SignupArtistOfPerf" id="signupArtistOfPerfByUserResultMap">
+		<!--id映射 -->
+		<id property="artistid" column="artistid" />
+		<!--普通属性映射 -->
+		<result property="description" column="description" />
+		<result property="price" column="price" />
+		<result property="stagename" column="stagename" />
+		<result property="specialty" column="specialty" />
+		<result property="state" column="state" />
+		<result property="pic" column="pic"/>
+	</resultMap>
+	
+	<!-- 读取用户发布的演艺活动列表 -->
+	<select id="getSendList"  resultMap="myPerformanceResultMap">
+	select *
+	from art_performance
+	where uid = #{uid}
+	order by perform_begin_time asc
+	</select>
+	<!-- 读取用户发布的可报名演艺活动列表 -->
+	<select id="getEnableList"  resultMap="myPerformanceResultMap">
+	select *
+	from art_performance
+	where uid = #{uid} and signup_state=1
+	order by perform_begin_time asc
+	</select>
+	<resultMap type="MyPerformance" id="myPerformanceResultMap">
+		<!--id映射 -->
+		<id property="id" column="id" />
+		<!--普通属性映射 -->
+		<result property="title" column="title" />
+		<result property="releaseTime" column="releasetime" />
+		<result property="auditState" column="auditState" />
+		<result property="type" column="type" />
+		<result property="performBeginTime" column="perform_begin_time" />
+		<result property="performEndTime" column="perform_end_time" />
+		<result property="require" column="require_" />
+		<result property="signupNum" column="signup_num" />
+		<result property="salary" column="salary" />
+		<result property="city" column="city" />
+		<result property="days" column="days" />
+		<result property="numberOfApplicants" column="numofapplicants" />
+		<result property="signupState" column="signup_state" />
+	</resultMap>
+	<!-- 更改演艺活动报名状态 -->
+	<update id="updateSignUpState" parameterType="java.util.Map">
+		update art_performance set signup_state=#{signup_state}
+		where id=#{performanceId} and uid=#{uid}
+	</update>
+	<!-- 修改演艺报名的报价，前提是报名时未成交状态 -->
+	<update id="updatePrice" parameterType="java.util.Map">
+		update entry_record
+		set price=${price},description=#{description} 
+		WHERE performanceid=#{performanceid} and artistid=#{artistid} and state=0
+	</update>
+	<!-- 取消报名后的二次报名的处理，重新设置报名状态为0，并程序修改演艺活动的报名人数-->
+	<update id="reSignUp" parameterType="java.util.Map">
+		update entry_record
+		set price=${price},description=#{description},siguptime=now(),state=0 
+		WHERE performanceid=#{performanceid} and artistid=#{artistid} and (state=4 or state=8);
+		update art_performance set signup_num=signup_num+1 where id=#{performanceid};
+	</update>
+	
+	
+	
+	
+</mapper>
